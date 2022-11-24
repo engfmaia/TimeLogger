@@ -1,83 +1,90 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using AutoMapper;
+using FileContextCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
 using Timelogger.Entities;
+using Timelogger.Mappers;
+using Timelogger.Services.Customers;
+using Timelogger.Services.Projects;
+using Timelogger.Services.TimeRegistrations;
 
 namespace Timelogger.Api
 {
-	public class Startup
-	{
-		private readonly IWebHostEnvironment _environment;
-		public IConfigurationRoot Configuration { get; }
+    public class Startup
+    {
+        private readonly IWebHostEnvironment _environment;
+        public IConfigurationRoot Configuration { get; }
 
-		public Startup(IWebHostEnvironment env)
-		{
-			_environment = env;
+        public Startup(IWebHostEnvironment env)
+        {
+            _environment = env;
 
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-				.AddEnvironmentVariables();
-			Configuration = builder.Build();
-		}
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+            Configuration = builder.Build();
+        }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
-		{
-			// Add framework services.
-			services.AddDbContext<ApiContext>(opt => opt.UseInMemoryDatabase("e-conomic interview"));
-			services.AddLogging(builder =>
-			{
-				builder.AddConsole();
-				builder.AddDebug();
-			});
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add framework services.
+            services.AddDbContext<ApiContext>(options => options.UseFileContextDatabase(
+                databaseName: "MockFileDatabase"
+            ));
 
-			services.AddMvc(options => options.EnableEndpointRouting = false);
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.AddDebug();
+            });
 
-			if (_environment.IsDevelopment())
-			{
-				services.AddCors();
-			}
-		}
+            //Services
+            services.AddScoped<IProjectsService, ProjectsService>();
+            services.Decorate<IProjectsService, ProjectsServiceLoggingDecorator>();
+            
+            services.AddScoped<ITimeRegistrationsService, TimeRegistrationsService>();
+            
+            services.AddScoped<ICustomersService, CustomersService>();
+            services.Decorate<ICustomersService, CustomersServiceLoggingDecorator>();
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			if (env.IsDevelopment())
-			{
-				app.UseCors(builder => builder
-					.AllowAnyMethod()
-					.AllowAnyHeader()
-					.SetIsOriginAllowed(origin => true)
-					.AllowCredentials());
-			}
+            // Auto Mapper Configurations
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
 
-			app.UseMvc();
+            IMapper mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
+            services.AddMvc(options => options.EnableEndpointRouting = false);
 
-			var serviceScopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
-			using (var scope = serviceScopeFactory.CreateScope())
-			{
-				SeedDatabase(scope);
-			}
-		}
+            if (_environment.IsDevelopment())
+            {
+                services.AddCors();
+            }
+        }
 
-		private static void SeedDatabase(IServiceScope scope)
-		{
-			var context = scope.ServiceProvider.GetService<ApiContext>();
-			var testProject1 = new Project
-			{
-				Id = 1,
-				Name = "e-conomic Interview"
-			};
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseCors(builder => builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials());
+            }
 
-			context.Projects.Add(testProject1);
-
-			context.SaveChanges();
-		}
-	}
+            app.UseMvc();
+        }
+    }
 }
