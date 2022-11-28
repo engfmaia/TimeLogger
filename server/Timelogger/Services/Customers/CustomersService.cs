@@ -14,8 +14,8 @@ namespace Timelogger.Services.Customers
 
         public CustomersService(ApiContext context, IMapper mapper)
         {
-            this._context = context;
-            this._mapper = mapper;
+            _context = context;
+            _mapper = mapper;
         }
 
         public CustomerDto CreateCustomer(string name)
@@ -28,9 +28,6 @@ namespace Timelogger.Services.Customers
 
         public CustomerDto GetCustomer(int id)
         {
-            if (id < 0)
-                throw new ArgumentOutOfRangeException("Id should be higher than zero");
-
             var customer = _context.Customers.Find(id);
 
             if (customer == null)

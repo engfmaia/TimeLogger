@@ -9,12 +9,18 @@ export default function ProjectsList()
 {
     const [loading, setLoading] = React.useState<boolean>();
     const [projects, setProjects] = React.useState<ProjectDto[]>();
+    const [orderAsceding, setOrderAsceding] = React.useState<boolean>(false);
 
     const page = 0;
     const itemsPerPage = 10;
-    const orderAsceding = true;
-
-    React.useEffect(() => {
+    
+    const toggleOrdering = () => {
+        setOrderAsceding(!orderAsceding);
+        loadProjects();
+    }
+    
+    const loadProjects = () => {
+        setLoading(true);
         getAll(page, itemsPerPage, orderAsceding)
         .then(response => response.json())
         .then(response => {
@@ -22,13 +28,23 @@ export default function ProjectsList()
             setProjects(response);
         })
         .catch(err => console.error(err));
+    }
+    
+    React.useEffect(() => {
+        loadProjects();
     }, []);
 
     if(loading === false && projects !== undefined) {
         return (
             <React.Fragment>
-                <div className="inline-flex">
-                    { projects.map(project => <ProjectCard key="{project.id}" {...project} /> ) }
+                <button 
+                    type="button" 
+                    onClick={toggleOrdering}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                        Order {orderAsceding ? 'Asceding' : 'Descending'}
+                </button>
+                <div className="grid grid-cols-4 gap-4">
+                    { projects.map(project => <ProjectCard key={project.id} {...project} /> ) }
                 </div>
             </React.Fragment>
         )

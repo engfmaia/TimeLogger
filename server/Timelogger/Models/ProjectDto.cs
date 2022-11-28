@@ -13,7 +13,7 @@ namespace Timelogger.Models
 
         public CustomerDto Customer { get; set; }
 
-        public bool Completed => Deadline < DateTime.Now;
+        public bool Completed => Deadline < DateTime.UtcNow;
 
         public ICollection<TimeRegistrationDto> TimeRegistrations { get; set; }
     }

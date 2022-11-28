@@ -6,9 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using Timelogger.Entities;
 using Timelogger.Mappers;
 using Timelogger.Services.Customers;
 using Timelogger.Services.Projects;
@@ -49,12 +46,16 @@ namespace Timelogger.Api
 
             //Services
             services.AddScoped<IProjectsService, ProjectsService>();
-            services.Decorate<IProjectsService, ProjectsServiceLoggingDecorator>();
-            
+            services.Decorate<IProjectsService, ProjectsServiceLoggingDecorator>()
+                    .Decorate<IProjectsService, ProjectsServiceValidationDecorator>();
+
             services.AddScoped<ITimeRegistrationsService, TimeRegistrationsService>();
-            
+            services.Decorate<ITimeRegistrationsService, TimeRegistrationsServiceLoggingDecorator>()
+                    .Decorate<ITimeRegistrationsService, TimeRegistrationsServiceValidationDecorator>();
+
             services.AddScoped<ICustomersService, CustomersService>();
-            services.Decorate<ICustomersService, CustomersServiceLoggingDecorator>();
+            services.Decorate<ICustomersService, CustomersServiceValidationDecorator>()
+                    .Decorate<ICustomersService, CustomersServiceLoggingDecorator>();
 
             // Auto Mapper Configurations
             var mapperConfig = new MapperConfiguration(mc =>

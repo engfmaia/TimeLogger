@@ -14,6 +14,9 @@ namespace Timelogger.Api.Tests
         private readonly IMapper _mapper;
         private readonly ITimeRegistrationsService _timeRegistrationsService;
 
+        private const string MockProjectName = "Mock Project One";
+        private const int MockProjectId = 111;
+
         public TimeRegistrationsServiceTests()
         {
             if (_mapper == null)
@@ -39,7 +42,7 @@ namespace Timelogger.Api.Tests
         [Test]
         public void CreatingTimeRegistrationForNonExistingProject_Should_ThrowNullReferenceException()
         {
-            Assert.That(() => _timeRegistrationsService.CreateTimeRegistration(1, 1m, DateTime.Now),
+            Assert.That(() => _timeRegistrationsService.CreateTimeRegistration(1, 1m, DateTime.UtcNow),
                 Throws.Exception
                   .TypeOf<NullReferenceException>());
         }
@@ -47,11 +50,11 @@ namespace Timelogger.Api.Tests
         [Test]
         public void QueryingTimeRegistrationsForProjectWithExistingId_Should_ReturnCorrectlyMappedDto()
         {
-            var project = CreateMockProject(12, 25, "MockProject 12");
-            CreateMockTimeRegistration(project, 2, DateTime.Now);
-            CreateMockTimeRegistration(project, 2, DateTime.Now);
+            var project = CreateMockProject(MockProjectId, 25, MockProjectName);
+            CreateMockTimeRegistration(project, 2, DateTime.UtcNow);
+            CreateMockTimeRegistration(project, 2, DateTime.UtcNow);
 
-            var timeRegistrationsOfProject = _timeRegistrationsService.GetTimeRegistrations(12);
+            var timeRegistrationsOfProject = _timeRegistrationsService.GetTimeRegistrations(MockProjectId);
             Assert.AreEqual(2, timeRegistrationsOfProject.Count);
         }
 

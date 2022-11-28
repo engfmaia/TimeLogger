@@ -8,7 +8,7 @@ namespace Timelogger.Models
 
         public decimal Hours { get; set; }
 
-        public DateTime CreationDate { get; set; }
+        public DateTime Date { get; set; }
 
         public ProjectDto Project { get; set; }
     }

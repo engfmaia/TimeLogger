@@ -14,6 +14,9 @@ namespace Timelogger.Api.Tests
         private readonly IMapper _mapper;
         private readonly ICustomersService _customersService;
 
+        private const string MockCustomerName = "Mock Customer Name";
+        private const int MockCustomerId = 123;
+
         public CustomersServiceTests()
         {
             if (_mapper == null)
@@ -37,21 +40,21 @@ namespace Timelogger.Api.Tests
         }
 
         [Test]
-        public void QueryingCustomerIdLowerThanZero_Should_ThrowArgumentOutOfRangeException()
+        public void QueryingCustomerWithValidButNoExistingId_Should_ThrowNullReferenceException()
         {
-            Assert.That(() => _customersService.GetCustomer(-1),
+            Assert.That(() => _customersService.GetCustomer(5),
                 Throws.Exception
-                  .TypeOf<ArgumentOutOfRangeException>());
+                  .TypeOf<NullReferenceException>());
         }
 
         [Test]
         public void QueryingProjectWithExistingId_Should_ReturnCorrectlyMappedDto()
         {
-            CreateMockCustomer(123, "MockCustomer 123");
+            CreateMockCustomer(MockCustomerId, MockCustomerName);
 
-            var customer = _customersService.GetCustomer(123);
-            Assert.AreEqual(123, customer.Id);
-            Assert.AreEqual("MockCustomer 123", customer.Name);
+            var customer = _customersService.GetCustomer(MockCustomerId);
+            Assert.AreEqual(MockCustomerId, customer.Id);
+            Assert.AreEqual(MockCustomerName, customer.Name);
         }
 
         private Customer CreateMockCustomer(int id, string name)

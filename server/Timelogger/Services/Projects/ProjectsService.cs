@@ -14,8 +14,8 @@ namespace Timelogger.Services.Projects
 
         public ProjectsService(ApiContext context, IMapper mapper)
         {
-            this._context = context;
-            this._mapper = mapper;
+            _context = context;
+            _mapper = mapper;
         }
 
         public ProjectDto CreateProject(int customerId, string name, DateTime deadline)
@@ -23,7 +23,7 @@ namespace Timelogger.Services.Projects
             var project = _context.Projects.Add(new Project
             {
                 Name = name,
-                CreationDate = DateTime.Now,
+                CreationDate = DateTime.UtcNow,
                 Deadline = deadline,
                 Customer = GetCustomerById(customerId)
             });
@@ -35,9 +35,6 @@ namespace Timelogger.Services.Projects
 
         public ProjectDto GetProject(int id)
         {
-            if (id < 0)
-                throw new ArgumentOutOfRangeException("Id should be higher than zero");
-
             var project = _context.Projects.Find(id);
 
             if (project == null)
@@ -49,15 +46,12 @@ namespace Timelogger.Services.Projects
         public ICollection<ProjectDto> GetProjects(bool orderAsceding)
         {
             return orderAsceding
-                            ? _context.Projects.OrderBy(project => project.Deadline).Select(project => _mapper.Map<ProjectDto>(project)).ToList()
-                            : _context.Projects.OrderByDescending(project => project.Deadline).Select(project => _mapper.Map<ProjectDto>(project)).ToList();
+                        ? _context.Projects.OrderBy(project => project.Deadline).Select(project => _mapper.Map<ProjectDto>(project)).ToList()
+                        : _context.Projects.OrderByDescending(project => project.Deadline).Select(project => _mapper.Map<ProjectDto>(project)).ToList();
         }
 
         private Customer GetCustomerById(int customerId)
         {
-            if (customerId < 0)
-                throw new ArgumentOutOfRangeException("Customer Id should be higher than zero");
-
             var customer = _context.Customers.Find(customerId);
 
             if (customer == null)

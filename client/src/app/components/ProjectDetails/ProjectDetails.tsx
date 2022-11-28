@@ -33,7 +33,7 @@ export default function ProjectDetails()
             <React.Fragment>
                 <div className="container mx-auto">
                     <div className="inline-flex">
-                        <ProjectCard key="{project.id}" {...project} />
+                        <ProjectCard key={project.id} {...project} />
                         <ProjectTimeRegistrations projectId={Number(id)} projectCompleted={project.completed} />
                     </div>
                 </div>

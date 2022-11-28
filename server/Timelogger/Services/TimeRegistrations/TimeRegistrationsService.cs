@@ -14,19 +14,19 @@ namespace Timelogger.Services.TimeRegistrations
 
         public TimeRegistrationsService(ApiContext context, IMapper mapper)
         {
-            this._context = context;
-            this._mapper = mapper;
+            _context = context;
+            _mapper = mapper;
         }
 
         public TimeRegistrationDto CreateTimeRegistration(int projectId, decimal hours, DateTime date)
         {
             var project = GetProjectById(projectId);
 
-            var timeRegistration = _context.TimeRegistrations.Add(new TimeRegistration 
-            { 
-                Hours = hours, 
+            var timeRegistration = _context.TimeRegistrations.Add(new TimeRegistration
+            {
+                Hours = hours,
                 Project = project,
-                CreationDate = DateTime.Now,
+                CreationDate = DateTime.UtcNow,
                 Date = date
             });
 
@@ -42,15 +42,13 @@ namespace Timelogger.Services.TimeRegistrations
             return _context
                     .TimeRegistrations
                     .Where(timeRegistration => timeRegistration.Project.Id == projectId)
+                    .OrderByDescending(timeRegistration => timeRegistration.Date)
                     .Select(customer => _mapper.Map<TimeRegistrationDto>(customer))
                     .ToList();
         }
 
         private Project GetProjectById(int projectId)
         {
-            if (projectId < 0)
-                throw new ArgumentOutOfRangeException("Project Id should be higher than zero");
-
             var project = _context.Projects.Find(projectId);
 
             if (project == null)

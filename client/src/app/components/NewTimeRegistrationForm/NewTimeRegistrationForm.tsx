@@ -2,20 +2,27 @@ import React, { FormEvent } from "react";
 import { create } from "../../api/timeRegistrations";
 import { ToastContainer, toast } from 'react-toastify';
 
-export default function NewTimeRegistrationForm(props: {projectId: number, projectCompleted: boolean}) 
+interface NewTimeRegistrationProps {
+    projectId: number,
+    projectCompleted: boolean,
+    newTimeRegistrationAdded: () => any;
+}
+
+export default function NewTimeRegistrationForm(props: NewTimeRegistrationProps) 
 {
     const [hours, setHours] = React.useState<number>();
     const [date, setDate] = React.useState<Date>();
 
     const todayDate = new Date();
-    const minDate = new Date(todayDate.setDate(todayDate.getDate() + 2)).toISOString().split("T")[0];
+    const maxDate = new Date(todayDate.setDate(todayDate.getDate())).toISOString().split("T")[0];
     
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
         if(hours !== undefined && date !== undefined){
             create(props.projectId, hours, date)
             .then(response => {
-                response.json()
+                response.json();
+                props.newTimeRegistrationAdded();
                 showToastMessage(true);
             })
             .catch(err => {
@@ -59,7 +66,7 @@ export default function NewTimeRegistrationForm(props: {projectId: number, proje
                                         type="date"
                                         name="name"
                                         id="name" 
-                                        min={minDate}
+                                        max={maxDate}
                                         placeholder="Date"
                                         className="m-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
                                         required

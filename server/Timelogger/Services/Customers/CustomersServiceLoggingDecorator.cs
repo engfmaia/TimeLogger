@@ -12,33 +12,59 @@ namespace Timelogger.Services.Customers
 
         public CustomersServiceLoggingDecorator(ICustomersService customersService, ILogger<CustomersServiceLoggingDecorator> logger)
         {
-            this._customersService = customersService;
-            this._logger = logger;
+            _customersService = customersService;
+            _logger = logger;
         }
 
         public CustomerDto CreateCustomer(string name)
         {
-            _logger.LogDebug("Customer creation started", DateTime.UtcNow.ToLongTimeString());
+            _logger.LogDebug($"Customer creation started: Name {name}", DateTime.UtcNow.ToLongTimeString());
 
-            var customer = _customersService.CreateCustomer(name);
-
-            _logger.LogDebug("Customer creation finished", DateTime.UtcNow.ToLongTimeString());
-
-            return customer;
+            try
+            {
+                var customer = _customersService.CreateCustomer(name);
+                _logger.LogDebug("Customer creation finished", DateTime.UtcNow.ToLongTimeString());
+                return customer;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug($"Customer creation finished: Name {name} and throwed exception {exception.GetType()} - {exception.Message}", DateTime.UtcNow.ToLongTimeString());
+                throw;
+            }
         }
 
         public CustomerDto GetCustomer(int id)
         {
-            _logger.LogDebug("Customer retrieval", DateTime.UtcNow.ToLongTimeString());
+            _logger.LogDebug($"Customer retrieval started: Id {id}", DateTime.UtcNow.ToLongTimeString());
 
-            return _customersService.GetCustomer(id);
+            try
+            {
+                var customer = _customersService.GetCustomer(id);
+                _logger.LogDebug($"Customer retrieval finished: Id {id}", DateTime.UtcNow.ToLongTimeString());
+                return customer;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug($"Customer retrieval finished: Id {id} and throwed exception {exception.GetType()} - {exception.Message}", DateTime.UtcNow.ToLongTimeString());
+                throw;
+            }
         }
 
         public ICollection<CustomerDto> GetCustomers()
         {
-            _logger.LogDebug("Customers retrieval", DateTime.UtcNow.ToLongTimeString());
+            _logger.LogDebug("Customers retrieval started", DateTime.UtcNow.ToLongTimeString());
 
-            return _customersService.GetCustomers();
+            try
+            {
+                var customers = _customersService.GetCustomers();
+                _logger.LogDebug("Customers retrieval finished", DateTime.UtcNow.ToLongTimeString());
+                return customers;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug($"Customer retrieval finished and throwed exception {exception.GetType()} - {exception.Message}", DateTime.UtcNow.ToLongTimeString());
+                throw;
+            }
         }
     }
 }

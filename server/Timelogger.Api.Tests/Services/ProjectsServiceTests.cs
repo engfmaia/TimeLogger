@@ -14,6 +14,13 @@ namespace Timelogger.Api.Tests
         private readonly IMapper _mapper;
         private readonly IProjectsService _projectsService;
 
+        private const string MockCustomerName = "Mock Customer";
+        private const int MockCustomerId = 123;
+        private const string MockProjectOneName = "Mock Project One";
+        private const int MockProjectOneId = 111;
+        private const string MockProjectTwoName = "Mock Project Two";
+        private const int MockProjectTwoId = 222;
+
         public ProjectsServiceTests()
         {
             if (_mapper == null)
@@ -36,19 +43,17 @@ namespace Timelogger.Api.Tests
             _projectsService = new ProjectsService(_context, _mapper);
         }
 
-        [Test]
-        public void QueryingProjectWithIdLowerThanZero_Should_ThrowArgumentOutOfRangeException()
+        [TearDown]
+        public void Cleanup()
         {
-            Assert.That(() => _projectsService.GetProject(-1),
-                Throws.Exception
-                  .TypeOf<ArgumentOutOfRangeException>());
+            _context.Projects.RemoveRange(_context.Projects);
         }
 
         [Test]
         public void QueryingProjectWithNoExistingId_Should_ThrowNullReferenceException()
         {
-            CreateMockProject(111, "MockProject 1");
-            CreateMockProject(222, "MockProject 2");
+            CreateMockProject(MockProjectOneId, MockProjectOneName);
+            CreateMockProject(MockProjectTwoId, MockProjectTwoName);
 
             Assert.That(() => _projectsService.GetProject(9999),
                 Throws.Exception
@@ -58,18 +63,18 @@ namespace Timelogger.Api.Tests
         [Test]
         public void QueryingProjectWithExistingId_Should_ReturnCorrectlyMappedDto()
         {
-            CreateMockProject(12, "MockProject 12");
-            CreateMockProject(23, "MockProject 23");
+            CreateMockProject(MockProjectOneId, MockProjectOneName);
+            CreateMockProject(MockProjectTwoId, MockProjectTwoName);
 
-            var project = _projectsService.GetProject(12);
-            Assert.AreEqual(12, project.Id);
-            Assert.AreEqual("MockProject 12", project.Name);
+            var project = _projectsService.GetProject(MockProjectTwoId);
+            Assert.AreEqual(MockProjectTwoId, project.Id);
+            Assert.AreEqual(MockProjectTwoName, project.Name);
         }
 
         [Test]
         public void CreatingProjectWithNonExistingCustomer_Should_ThrowNullReferenceException()
         {
-            Assert.That(() => _projectsService.CreateProject(1, "This is a new project", DateTime.Now),
+            Assert.That(() => _projectsService.CreateProject(1, MockProjectOneName, DateTime.UtcNow),
                 Throws.Exception
                   .TypeOf<NullReferenceException>());
         }
@@ -77,10 +82,11 @@ namespace Timelogger.Api.Tests
         [Test]
         public void CreatingProjectWithValidName_Should_ReturnCorrectlyCreatedAndMappedDto()
         {
-            CreateMockCustomer(1, "Test Customer");
-            var project = _projectsService.CreateProject(1, "This is a new project", DateTime.Now);
+            CreateMockCustomer(MockCustomerId, MockCustomerName);
+            var project = _projectsService.CreateProject(MockCustomerId, MockProjectOneName, DateTime.UtcNow);
+
             Assert.AreEqual(true, project.Id > 0);
-            Assert.AreEqual("This is a new project", project.Name);
+            Assert.AreEqual(MockProjectOneName, project.Name);
         }
 
         private void CreateMockProject(int id, string name)
